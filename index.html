@@ -1,4 +1,543 @@
-    <script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Beach Volleyball Match Tracker</title>
+    <style>
+        :root {
+            --bg: #f5f3ef;
+            --card: #ffffff;
+            --text: #1a1a1a;
+            --subtext: #6b6b6b;
+            --border: #e0dcd5;
+            --accent: #d4a853;
+            --accent-dark: #b8913a;
+            --danger: #c0392b;
+            --danger-light: #fce4e4;
+            --success: #27ae60;
+            --success-light: #e6f7ee;
+            --warning: #f39c12;
+            --warning-light: #fef5e7;
+            --info: #2980b9;
+            --info-light: #eaf4fb;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px;
+        }
+
+        .container { max-width: 640px; margin: 0 auto; padding: 10px; }
+
+        .header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        .header h1 { font-size: 1.05rem; font-weight: 700; }
+        .header .match-indicator {
+            font-size: 0.72rem;
+            color: var(--accent);
+            font-weight: 600;
+            background: #fdf8f0;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--accent);
+            max-width: 55%;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 48px;
+            z-index: 99;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 11px 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--subtext);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            font-family: inherit;
+        }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 13px;
+            margin: 8px 0;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--subtext);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: var(--subtext);
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        select, input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-family: inherit;
+            background: #fafaf8;
+            color: var(--text);
+            appearance: none;
+            -webkit-appearance: none;
+            margin-bottom: 5px;
+        }
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b6b6b'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 28px;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212,168,83,0.12); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
+        .form-row-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 4px; }
+
+        .field-group {
+            background: #fafaf8;
+            border-radius: 8px;
+            padding: 9px;
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+        }
+        .field-group-label {
+            font-size: 0.63rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .btn-primary { background: var(--accent); color: white; width: 100%; }
+        .btn-primary:hover { background: var(--accent-dark); }
+        .btn-outline { background: white; color: var(--accent); border: 1.5px solid var(--accent); }
+        .btn-outline:hover { background: #fdf8f0; }
+        .btn-sm { padding: 6px 10px; font-size: 0.73rem; border-radius: 6px; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
+        .btn-xs { padding: 4px 8px; font-size: 0.66rem; border-radius: 5px; }
+
+        .continuation-banner {
+            background: var(--info-light);
+            border: 1px solid var(--info);
+            border-radius: 8px;
+            padding: 7px 10px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .continuation-banner .banner-text { font-weight: 600; font-size: 0.78rem; color: var(--info); }
+        .continuation-banner .banner-detail { font-size: 0.68rem; color: var(--subtext); }
+
+        .rally-group {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 5px;
+            overflow: hidden;
+            background: var(--card);
+        }
+        .rally-group-header {
+            background: #fafaf8;
+            padding: 6px 10px;
+            font-weight: 700;
+            font-size: 0.76rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .action-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 4px 8px;
+            border-bottom: 1px solid #f0ede5;
+            font-size: 0.74rem;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .action-row:last-child { border-bottom: none; }
+        .action-number {
+            background: #e8e4da;
+            color: var(--subtext);
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.58rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .rally-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.63rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .badge-kill { background: var(--success-light); color: var(--success); }
+        .badge-error { background: var(--danger-light); color: var(--danger); }
+        .badge-block { background: var(--warning-light); color: var(--warning); }
+        .badge-dug { background: var(--info-light); color: var(--info); }
+        .badge-neutral { background: #f0f0f0; color: #555; }
+        .action-info { flex: 1; min-width: 80px; font-size: 0.72rem; line-height: 1.3; }
+        .action-meta { font-size: 0.63rem; color: var(--subtext); }
+        .set-detail { color: var(--accent); font-weight: 500; font-size: 0.63rem; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .stats-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; }
+        .stat-card {
+            background: #fafaf8;
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .stat-value { font-size: 1.2rem; font-weight: 700; }
+        .stat-label { font-size: 0.6rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.03em; }
+        .stat-card.good .stat-value { color: var(--success); }
+        .stat-card.bad .stat-value { color: var(--danger); }
+        .stat-card.warn .stat-value { color: var(--warning); }
+
+        .mini-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-top: 4px; }
+        .mini-table th, .mini-table td { padding: 4px 5px; text-align: center; border-bottom: 1px solid var(--border); }
+        .mini-table th { color: var(--subtext); font-weight: 600; font-size: 0.62rem; text-transform: uppercase; }
+        .mini-table .highlight { background: var(--danger-light); border-radius: 3px; font-weight: 600; }
+        .mini-table .good-highlight { background: var(--success-light); border-radius: 3px; font-weight: 600; }
+
+        .match-chip {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 18px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 2px;
+            border: 1px solid var(--border);
+            background: white;
+            transition: all 0.15s;
+        }
+        .match-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a1a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+
+        .empty-state { text-align: center; padding: 22px 15px; color: var(--subtext); }
+        .empty-state .icon { font-size: 1.6rem; margin-bottom: 4px; }
+
+        .undo-area { text-align: center; margin-top: 5px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+
+        .set-selector { display: flex; gap: 3px; margin-bottom: 6px; }
+        .set-btn {
+            flex: 1;
+            padding: 5px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: white;
+            font-family: inherit;
+        }
+        .set-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .stats-section { margin-bottom: 8px; }
+        .stats-section-title {
+            font-size: 0.68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 400px) {
+            .form-row-5 { grid-template-columns: 1fr 1fr 1fr; }
+            .form-row-4 { grid-template-columns: 1fr 1fr; }
+            .form-row-3 { grid-template-columns: 1fr 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stats-grid-4 { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏐 VB Tracker</h1>
+        <span class="match-indicator" id="currentMatchDisplay">No match set</span>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('log')">📝 Log</button>
+        <button class="tab" onclick="switchTab('stats')">📊 Stats</button>
+        <button class="tab" onclick="switchTab('history')">📋 History</button>
+        <button class="tab" onclick="switchTab('matches')">⚙️ Setup</button>
+    </div>
+
+    <div class="container">
+
+        <!-- ═══════════════════════ LOG TAB ═══════════════════════ -->
+        <div id="tab-log">
+            <div class="card" id="setupCard">
+                <div class="card-title">Start a Match</div>
+                <div class="form-row">
+                    <div><label>Player A Name</label><input type="text" id="playerAName" placeholder="e.g., Smith"></div>
+                    <div><label>Player B Name</label><input type="text" id="playerBName" placeholder="e.g., Jones"></div>
+                </div>
+                <div class="form-row">
+                    <div><label>Opponent</label><input type="text" id="opponentName" placeholder="Opponent team/names"></div>
+                    <div><label>Date</label><input type="date" id="matchDate" value=""></div>
+                </div>
+                <button class="btn btn-primary" onclick="startMatch()" style="margin-top:6px;">Start Match</button>
+            </div>
+
+            <div class="card" id="loggingCard" style="display:none;">
+                <div class="card-title" id="logCardTitle">Log Rally</div>
+                <div class="set-selector">
+                    <button class="set-btn active" id="setBtn1" onclick="selectSet(1)">Set 1</button>
+                    <button class="set-btn" id="setBtn2" onclick="selectSet(2)">Set 2</button>
+                    <button class="set-btn" id="setBtn3" onclick="selectSet(3)">Set 3</button>
+                </div>
+
+                <div class="continuation-banner" id="continuationBanner" style="display:none;">
+                    <div>
+                        <div class="banner-text" id="bannerText">Rally continues!</div>
+                        <div class="banner-detail" id="bannerDetail"></div>
+                    </div>
+                    <button class="btn btn-outline btn-xs" onclick="finishRallyEarly()">✕ End Rally</button>
+                </div>
+
+                <!-- SERVE -->
+                <div class="field-group">
+                    <div class="field-group-label">Serve</div>
+                    <div class="form-row-3">
+                        <div><label>Server</label><select id="server"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
+                        <div><label>Serve Type</label><select id="serveType"><option value="JF">Jump Float</option><option value="JS">Jump Spin</option><option value="SF">Standing Float</option><option value="HY">Hybrid</option></select></div>
+                        <div><label>Strength</label><select id="serveStrength"><option value="2" selected>2 - Normal</option><option value="1">1 - Soft</option><option value="3">3 - Hard</option></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div><label>Serve From (baseline)</label><select id="serveFrom"><option value="3" selected>3 - Center</option><option value="1">1 - Left corner</option><option value="2">2 - Left-center</option><option value="4">4 - Right-center</option><option value="5">5 - Right corner</option></select></div>
+                        <div><label>Serve Zone (landing)</label><select id="serveZone"><option value="2C" selected>Mid Center</option><option value="1L">Net Left</option><option value="1C">Net Center</option><option value="1R">Net Right</option><option value="2L">Mid Left</option><option value="2R">Mid Right</option><option value="3L">Deep Left</option><option value="3C">Deep Center</option><option value="3R">Deep Right</option></select></div>
+                    </div>
+                </div>
+
+                <!-- RECEIVE -->
+                <div class="field-group">
+                    <div class="field-group-label">Receive</div>
+                    <div><label>Rec Quality</label><select id="recQuality"><option value="">N/A (ace or no receive)</option><option value="0">0 - Ace / Overpass</option><option value="1">1 - Poor</option><option value="2" selected>2 - Medium</option><option value="3">3 - Perfect</option></select></div>
+                </div>
+
+                <!-- SET -->
+                <div class="field-group">
+                    <div class="field-group-label">Set</div>
+                    <div class="form-row-3">
+                        <div><label>Quality</label><select id="setQuality"><option value="2" selected>2 - Good</option><option value="1">1 - Bad</option><option value="3">3 - Perfect</option></select></div>
+                        <div><label>Height</label><select id="setHeight"><option value="H" selected>High</option><option value="L">Low / Quick</option></select></div>
+                        <div><label>Depth</label><select id="setDepth"><option value="S" selected>Standard</option><option value="T">Tight (trap)</option><option value="O">Off (can't hit down)</option></select></div>
+                    </div>
+                    <div><label>Lateral (pin to pin)</label><select id="setLateral"><option value="3" selected>3 - Center</option><option value="1">1 - Left Pin</option><option value="2">2 - Left-Center</option><option value="4">4 - Right-Center</option><option value="5">5 - Right Pin</option></select></div>
+                </div>
+
+                <!-- ATTACK -->
+                <div class="field-group">
+                    <div class="field-group-label">Attack</div>
+                    <div class="form-row-3">
+                        <div><label>Attacker</label><select id="attacker"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
+                        <div><label>From Zone</label><select id="fromZone"><option value="2R" selected>Mid Right</option><option value="1L">Net Left</option><option value="1C">Net Center</option><option value="1R">Net Right</option><option value="2L">Mid Left</option><option value="2C">Mid Center</option><option value="3L">Deep Left</option><option value="3C">Deep Center</option><option value="3R">Deep Right</option></select></div>
+                        <div><label>Shot Type</label><select id="shotType"><option value="H">Hard</option><option value="S">Soft</option></select></div>
+                    </div>
+                    <div class="form-row">
+                        <div><label>Direction</label><select id="direction"><option value="C">Cross</option><option value="L">Line</option><option value="LC">Line-Cut</option><option value="S">Seam (middle)</option><option value="CS">Sharp Cross</option><option value="JB">Jumbo Deep</option></select></div>
+                        <div><label>Outcome</label><select id="outcome" onchange="onOutcomeChange()"><option value="KNT">Kill (Clean)</option><option value="KT">Kill (Touch)</option><option value="BLK">Blocked</option><option value="BLK-C">Blocked (Covered)</option><option value="OUT">Hit Out</option><option value="NET">Into Net</option><option value="DUG">Dug</option><option value="D-ERR">Dig Error</option></select></div>
+                    </div>
+                </div>
+
+                <!-- DIG -->
+                <div class="field-group" id="digDetails" style="display:none;">
+                    <div class="field-group-label">Dig</div>
+                    <div class="form-row">
+                        <div><label>Dig By</label><select id="digBy"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
+                        <div><label>Dig Quality</label><select id="digQuality"><option value="2" selected>2 - Medium</option><option value="1">1 - Poor</option><option value="3">3 - Perfect</option></select></div>
+                    </div>
+                </div>
+
+                <!-- RESULT -->
+                <div class="form-row">
+                    <div><label>Point Won By</label><select id="pointWonBy"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
+                    <div><label>Quick Note</label><input type="text" id="note" placeholder="Optional..."></div>
+                </div>
+
+                <button class="btn btn-primary" onclick="logAction()" style="margin-top:4px;" id="logButton">Log Action</button>
+                <div class="undo-area">
+                    <button class="btn btn-outline btn-sm" onclick="undoLast()">↩ Undo Last</button>
+                    <button class="btn btn-outline btn-sm" onclick="newRally()">➕ New Rally</button>
+                </div>
+            </div>
+
+            <div class="card" id="recentLogCard" style="display:none;">
+                <div class="card-title">Recent Rallies <span style="font-weight:400;color:var(--subtext);" id="rallyCount"></span></div>
+                <div id="recentRallies"><div class="empty-state">No rallies logged yet</div></div>
+                <button class="btn btn-outline btn-block btn-sm" onclick="endMatch()" style="margin-top:6px;">🏁 End Match & Save</button>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════ STATS TAB ═══════════════════════ -->
+        <div id="tab-stats" style="display:none;">
+            <div class="card">
+                <div class="card-title">Filters</div>
+                <div class="form-row-4">
+                    <div><label>Player</label><select id="filterPlayer" onchange="refreshStats()"><option value="All">All Players</option><option value="A">A</option><option value="B">B</option><option value="Opp">Opponent</option></select></div>
+                    <div><label>Shot Type</label><select id="filterShotType" onchange="refreshStats()"><option value="All">All</option><option value="H">Hard</option><option value="S">Soft</option></select></div>
+                    <div><label>Direction</label><select id="filterDirection" onchange="refreshStats()"><option value="All">All</option><option value="L">Line</option><option value="LC">Line-Cut</option><option value="S">Seam</option><option value="C">Cross</option><option value="CS">Sharp Cross</option><option value="JB">Jumbo Deep</option></select></div>
+                    <div><label>Set</label><select id="filterSet" onchange="refreshStats()"><option value="All">All Sets</option><option value="1">Set 1</option><option value="2">Set 2</option><option value="3">Set 3</option></select></div>
+                </div>
+            </div>
+
+            <div class="card" id="statsContent">
+                <div class="empty-state"><div class="icon">📊</div>Log some actions to see stats here.</div>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════ HISTORY TAB ═══════════════════════ -->
+        <div id="tab-history" style="display:none;">
+            <div class="card"><div class="card-title">Saved Matches</div><div id="matchList"></div></div>
+        </div>
+
+        <!-- ═══════════════════════ SETUP TAB ═══════════════════════ -->
+        <div id="tab-matches" style="display:none;">
+            <div class="card">
+                <div class="card-title">Manage Matches</div>
+                <p style="font-size:0.78rem;color:var(--subtext);margin-bottom:6px;">Start a new match or resume an existing one. Data syncs across your devices.</p>
+                <div id="existingMatches" style="margin-bottom:6px;"></div>
+                <button class="btn btn-danger btn-sm" onclick="deleteAllData()">🗑 Delete All Data</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+        // ═══════════════════════════════════════
+        // PASTE YOUR FIREBASE CONFIG HERE
+        // ═══════════════════════════════════════
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        // ═══════════════════════════════════════
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db;
+        window.actionsCollection = collection(db, "actions");
+        window.matchesCollection = collection(db, "matches");
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.where = where;
+    </script>
+
+        <script>
         // ═══════════════════════════════════════
         // GLOBAL STATE
         // ═══════════════════════════════════════
@@ -816,3 +1355,6 @@
         // Expose for console use
         window.debugState = debugState;
     </script>
+
+</body>
+</html>
