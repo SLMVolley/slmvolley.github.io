@@ -1,542 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Beach Volleyball Match Tracker</title>
-    <style>
-        :root {
-            --bg: #f5f3ef;
-            --card: #ffffff;
-            --text: #1a1a1a;
-            --subtext: #6b6b6b;
-            --border: #e0dcd5;
-            --accent: #d4a853;
-            --accent-dark: #b8913a;
-            --danger: #c0392b;
-            --danger-light: #fce4e4;
-            --success: #27ae60;
-            --success-light: #e6f7ee;
-            --warning: #f39c12;
-            --warning-light: #fef5e7;
-            --info: #2980b9;
-            --info-light: #eaf4fb;
-            --radius: 12px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: 80px;
-        }
-
-        .container { max-width: 640px; margin: 0 auto; padding: 10px; }
-
-        .header {
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow);
-        }
-        .header h1 { font-size: 1.05rem; font-weight: 700; }
-        .header .match-indicator {
-            font-size: 0.72rem;
-            color: var(--accent);
-            font-weight: 600;
-            background: #fdf8f0;
-            padding: 4px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--accent);
-            max-width: 55%;
-            text-align: right;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .tabs {
-            display: flex;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 48px;
-            z-index: 99;
-        }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 11px 4px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--subtext);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.15s;
-            background: none;
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            font-family: inherit;
-        }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-        .card {
-            background: var(--card);
-            border-radius: var(--radius);
-            padding: 13px;
-            margin: 8px 0;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-        }
-        .card-title {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--subtext);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        label {
-            display: block;
-            font-size: 0.68rem;
-            font-weight: 600;
-            color: var(--subtext);
-            margin-bottom: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-        }
-        select, input[type="text"], input[type="date"] {
-            width: 100%;
-            padding: 9px 10px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-family: inherit;
-            background: #fafaf8;
-            color: var(--text);
-            appearance: none;
-            -webkit-appearance: none;
-            margin-bottom: 5px;
-        }
-        select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b6b6b'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            padding-right: 28px;
-        }
-        input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212,168,83,0.12); }
-
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
-        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-        .form-row-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 4px; }
-        .form-row-5 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 4px; }
-
-        .field-group {
-            background: #fafaf8;
-            border-radius: 8px;
-            padding: 9px;
-            margin-bottom: 6px;
-            border: 1px solid var(--border);
-        }
-        .field-group-label {
-            font-size: 0.63rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--accent);
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all 0.15s;
-            font-family: inherit;
-        }
-        .btn-primary { background: var(--accent); color: white; width: 100%; }
-        .btn-primary:hover { background: var(--accent-dark); }
-        .btn-outline { background: white; color: var(--accent); border: 1.5px solid var(--accent); }
-        .btn-outline:hover { background: #fdf8f0; }
-        .btn-sm { padding: 6px 10px; font-size: 0.73rem; border-radius: 6px; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-block { width: 100%; }
-        .btn-xs { padding: 4px 8px; font-size: 0.66rem; border-radius: 5px; }
-
-        .continuation-banner {
-            background: var(--info-light);
-            border: 1px solid var(--info);
-            border-radius: 8px;
-            padding: 7px 10px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .continuation-banner .banner-text { font-weight: 600; font-size: 0.78rem; color: var(--info); }
-        .continuation-banner .banner-detail { font-size: 0.68rem; color: var(--subtext); }
-
-        .rally-group {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            margin-bottom: 5px;
-            overflow: hidden;
-            background: var(--card);
-        }
-        .rally-group-header {
-            background: #fafaf8;
-            padding: 6px 10px;
-            font-weight: 700;
-            font-size: 0.76rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .action-row {
-            display: flex;
-            align-items: flex-start;
-            padding: 4px 8px;
-            border-bottom: 1px solid #f0ede5;
-            font-size: 0.74rem;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        .action-row:last-child { border-bottom: none; }
-        .action-number {
-            background: #e8e4da;
-            color: var(--subtext);
-            width: 17px;
-            height: 17px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.58rem;
-            font-weight: 700;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-        .rally-badge {
-            display: inline-block;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 0.63rem;
-            font-weight: 600;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        .badge-kill { background: var(--success-light); color: var(--success); }
-        .badge-error { background: var(--danger-light); color: var(--danger); }
-        .badge-block { background: var(--warning-light); color: var(--warning); }
-        .badge-dug { background: var(--info-light); color: var(--info); }
-        .badge-neutral { background: #f0f0f0; color: #555; }
-        .action-info { flex: 1; min-width: 80px; font-size: 0.72rem; line-height: 1.3; }
-        .action-meta { font-size: 0.63rem; color: var(--subtext); }
-        .set-detail { color: var(--accent); font-weight: 500; font-size: 0.63rem; }
-
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
-        .stats-grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; }
-        .stat-card {
-            background: #fafaf8;
-            border-radius: 10px;
-            padding: 10px 6px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .stat-value { font-size: 1.2rem; font-weight: 700; }
-        .stat-label { font-size: 0.6rem; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.03em; }
-        .stat-card.good .stat-value { color: var(--success); }
-        .stat-card.bad .stat-value { color: var(--danger); }
-        .stat-card.warn .stat-value { color: var(--warning); }
-
-        .mini-table { width: 100%; border-collapse: collapse; font-size: 0.7rem; margin-top: 4px; }
-        .mini-table th, .mini-table td { padding: 4px 5px; text-align: center; border-bottom: 1px solid var(--border); }
-        .mini-table th { color: var(--subtext); font-weight: 600; font-size: 0.62rem; text-transform: uppercase; }
-        .mini-table .highlight { background: var(--danger-light); border-radius: 3px; font-weight: 600; }
-        .mini-table .good-highlight { background: var(--success-light); border-radius: 3px; font-weight: 600; }
-
-        .match-chip {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 18px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 2px;
-            border: 1px solid var(--border);
-            background: white;
-            transition: all 0.15s;
-        }
-        .match-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1a1a;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.78rem;
-            font-weight: 500;
-            z-index: 999;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        .toast.show { opacity: 1; }
-
-        .empty-state { text-align: center; padding: 22px 15px; color: var(--subtext); }
-        .empty-state .icon { font-size: 1.6rem; margin-bottom: 4px; }
-
-        .undo-area { text-align: center; margin-top: 5px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
-
-        .set-selector { display: flex; gap: 3px; margin-bottom: 6px; }
-        .set-btn {
-            flex: 1;
-            padding: 5px;
-            border-radius: 6px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: white;
-            font-family: inherit;
-        }
-        .set-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-        .stats-section { margin-bottom: 8px; }
-        .stats-section-title {
-            font-size: 0.68rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--accent);
-            margin-bottom: 4px;
-        }
-
-        @media (max-width: 400px) {
-            .form-row-5 { grid-template-columns: 1fr 1fr 1fr; }
-            .form-row-4 { grid-template-columns: 1fr 1fr; }
-            .form-row-3 { grid-template-columns: 1fr 1fr; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .stats-grid-4 { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1>🏐 VB Tracker</h1>
-        <span class="match-indicator" id="currentMatchDisplay">No match set</span>
-    </div>
-
-    <div class="tabs">
-        <button class="tab active" onclick="switchTab('log')">📝 Log</button>
-        <button class="tab" onclick="switchTab('stats')">📊 Stats</button>
-        <button class="tab" onclick="switchTab('history')">📋 History</button>
-        <button class="tab" onclick="switchTab('matches')">⚙️ Setup</button>
-    </div>
-
-    <div class="container">
-
-        <!-- ═══════════════════════ LOG TAB ═══════════════════════ -->
-        <div id="tab-log">
-            <div class="card" id="setupCard">
-                <div class="card-title">Start a Match</div>
-                <div class="form-row">
-                    <div><label>Player A Name</label><input type="text" id="playerAName" placeholder="e.g., Smith"></div>
-                    <div><label>Player B Name</label><input type="text" id="playerBName" placeholder="e.g., Jones"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>Opponent</label><input type="text" id="opponentName" placeholder="Opponent team/names"></div>
-                    <div><label>Date</label><input type="date" id="matchDate" value=""></div>
-                </div>
-                <button class="btn btn-primary" onclick="startMatch()" style="margin-top:6px;">Start Match</button>
-            </div>
-
-            <div class="card" id="loggingCard" style="display:none;">
-                <div class="card-title" id="logCardTitle">Log Rally</div>
-                <div class="set-selector">
-                    <button class="set-btn active" id="setBtn1" onclick="selectSet(1)">Set 1</button>
-                    <button class="set-btn" id="setBtn2" onclick="selectSet(2)">Set 2</button>
-                    <button class="set-btn" id="setBtn3" onclick="selectSet(3)">Set 3</button>
-                </div>
-
-                <div class="continuation-banner" id="continuationBanner" style="display:none;">
-                    <div>
-                        <div class="banner-text" id="bannerText">Rally continues!</div>
-                        <div class="banner-detail" id="bannerDetail"></div>
-                    </div>
-                    <button class="btn btn-outline btn-xs" onclick="finishRallyEarly()">✕ End Rally</button>
-                </div>
-
-                <!-- SERVE -->
-                <div class="field-group">
-                    <div class="field-group-label">Serve</div>
-                    <div class="form-row-3">
-                        <div><label>Server</label><select id="server"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
-                        <div><label>Serve Type</label><select id="serveType"><option value="JF">Jump Float</option><option value="JS">Jump Spin</option><option value="SF">Standing Float</option><option value="HY">Hybrid</option></select></div>
-                        <div><label>Strength</label><select id="serveStrength"><option value="2" selected>2 - Normal</option><option value="1">1 - Soft</option><option value="3">3 - Hard</option></select></div>
-                    </div>
-                    <div class="form-row">
-                        <div><label>Serve From (baseline)</label><select id="serveFrom"><option value="3" selected>3 - Center</option><option value="1">1 - Left corner</option><option value="2">2 - Left-center</option><option value="4">4 - Right-center</option><option value="5">5 - Right corner</option></select></div>
-                        <div><label>Serve Zone (landing)</label><select id="serveZone"><option value="2C" selected>Mid Center</option><option value="1L">Net Left</option><option value="1C">Net Center</option><option value="1R">Net Right</option><option value="2L">Mid Left</option><option value="2R">Mid Right</option><option value="3L">Deep Left</option><option value="3C">Deep Center</option><option value="3R">Deep Right</option></select></div>
-                    </div>
-                </div>
-
-                <!-- RECEIVE -->
-                <div class="field-group">
-                    <div class="field-group-label">Receive</div>
-                    <div><label>Rec Quality</label><select id="recQuality"><option value="">N/A (ace or no receive)</option><option value="0">0 - Ace / Overpass</option><option value="1">1 - Poor</option><option value="2" selected>2 - Medium</option><option value="3">3 - Perfect</option></select></div>
-                </div>
-
-                <!-- SET -->
-                <div class="field-group">
-                    <div class="field-group-label">Set</div>
-                    <div class="form-row-3">
-                        <div><label>Quality</label><select id="setQuality"><option value="2" selected>2 - Good</option><option value="1">1 - Bad</option><option value="3">3 - Perfect</option></select></div>
-                        <div><label>Height</label><select id="setHeight"><option value="H" selected>High</option><option value="L">Low / Quick</option></select></div>
-                        <div><label>Depth</label><select id="setDepth"><option value="S" selected>Standard</option><option value="T">Tight (trap)</option><option value="O">Off (can't hit down)</option></select></div>
-                    </div>
-                    <div><label>Lateral (pin to pin)</label><select id="setLateral"><option value="3" selected>3 - Center</option><option value="1">1 - Left Pin</option><option value="2">2 - Left-Center</option><option value="4">4 - Right-Center</option><option value="5">5 - Right Pin</option></select></div>
-                </div>
-
-                <!-- ATTACK -->
-                <div class="field-group">
-                    <div class="field-group-label">Attack</div>
-                    <div class="form-row-3">
-                        <div><label>Attacker</label><select id="attacker"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
-                        <div><label>From Zone</label><select id="fromZone"><option value="2R" selected>Mid Right</option><option value="1L">Net Left</option><option value="1C">Net Center</option><option value="1R">Net Right</option><option value="2L">Mid Left</option><option value="2C">Mid Center</option><option value="3L">Deep Left</option><option value="3C">Deep Center</option><option value="3R">Deep Right</option></select></div>
-                        <div><label>Shot Type</label><select id="shotType"><option value="H">Hard</option><option value="S">Soft</option></select></div>
-                    </div>
-                    <div class="form-row">
-                        <div><label>Direction</label><select id="direction"><option value="C">Cross</option><option value="L">Line</option><option value="LC">Line-Cut</option><option value="S">Seam (middle)</option><option value="CS">Sharp Cross</option><option value="JB">Jumbo Deep</option></select></div>
-                        <div><label>Outcome</label><select id="outcome" onchange="onOutcomeChange()"><option value="KNT">Kill (Clean)</option><option value="KT">Kill (Touch)</option><option value="BLK">Blocked</option><option value="BLK-C">Blocked (Covered)</option><option value="OUT">Hit Out</option><option value="NET">Into Net</option><option value="DUG">Dug</option><option value="D-ERR">Dig Error</option></select></div>
-                    </div>
-                </div>
-
-                <!-- DIG -->
-                <div class="field-group" id="digDetails" style="display:none;">
-                    <div class="field-group-label">Dig</div>
-                    <div class="form-row">
-                        <div><label>Dig By</label><select id="digBy"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
-                        <div><label>Dig Quality</label><select id="digQuality"><option value="2" selected>2 - Medium</option><option value="1">1 - Poor</option><option value="3">3 - Perfect</option></select></div>
-                    </div>
-                </div>
-
-                <!-- RESULT -->
-                <div class="form-row">
-                    <div><label>Point Won By</label><select id="pointWonBy"><option value="A">A</option><option value="B">B</option><option value="Opp">Opp</option></select></div>
-                    <div><label>Quick Note</label><input type="text" id="note" placeholder="Optional..."></div>
-                </div>
-
-                <button class="btn btn-primary" onclick="logAction()" style="margin-top:4px;" id="logButton">Log Action</button>
-                <div class="undo-area">
-                    <button class="btn btn-outline btn-sm" onclick="undoLast()">↩ Undo Last</button>
-                    <button class="btn btn-outline btn-sm" onclick="newRally()">➕ New Rally</button>
-                </div>
-            </div>
-
-            <div class="card" id="recentLogCard" style="display:none;">
-                <div class="card-title">Recent Rallies <span style="font-weight:400;color:var(--subtext);" id="rallyCount"></span></div>
-                <div id="recentRallies"><div class="empty-state">No rallies logged yet</div></div>
-                <button class="btn btn-outline btn-block btn-sm" onclick="endMatch()" style="margin-top:6px;">🏁 End Match & Save</button>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════ STATS TAB ═══════════════════════ -->
-        <div id="tab-stats" style="display:none;">
-            <div class="card">
-                <div class="card-title">Filters</div>
-                <div class="form-row-4">
-                    <div><label>Player</label><select id="filterPlayer" onchange="refreshStats()"><option value="All">All Players</option><option value="A">A</option><option value="B">B</option><option value="Opp">Opponent</option></select></div>
-                    <div><label>Shot Type</label><select id="filterShotType" onchange="refreshStats()"><option value="All">All</option><option value="H">Hard</option><option value="S">Soft</option></select></div>
-                    <div><label>Direction</label><select id="filterDirection" onchange="refreshStats()"><option value="All">All</option><option value="L">Line</option><option value="LC">Line-Cut</option><option value="S">Seam</option><option value="C">Cross</option><option value="CS">Sharp Cross</option><option value="JB">Jumbo Deep</option></select></div>
-                    <div><label>Set</label><select id="filterSet" onchange="refreshStats()"><option value="All">All Sets</option><option value="1">Set 1</option><option value="2">Set 2</option><option value="3">Set 3</option></select></div>
-                </div>
-            </div>
-
-            <div class="card" id="statsContent">
-                <div class="empty-state"><div class="icon">📊</div>Log some actions to see stats here.</div>
-            </div>
-        </div>
-
-        <!-- ═══════════════════════ HISTORY TAB ═══════════════════════ -->
-        <div id="tab-history" style="display:none;">
-            <div class="card"><div class="card-title">Saved Matches</div><div id="matchList"></div></div>
-        </div>
-
-        <!-- ═══════════════════════ SETUP TAB ═══════════════════════ -->
-        <div id="tab-matches" style="display:none;">
-            <div class="card">
-                <div class="card-title">Manage Matches</div>
-                <p style="font-size:0.78rem;color:var(--subtext);margin-bottom:6px;">Start a new match or resume an existing one. Data syncs across your devices.</p>
-                <div id="existingMatches" style="margin-bottom:6px;"></div>
-                <button class="btn btn-danger btn-sm" onclick="deleteAllData()">🗑 Delete All Data</button>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="toast" id="toast"></div>
-
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-
-        // ═══════════════════════════════════════
-        // PASTE YOUR FIREBASE CONFIG HERE
-        // ═══════════════════════════════════════
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        // ═══════════════════════════════════════
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
-        window.actionsCollection = collection(db, "actions");
-        window.matchesCollection = collection(db, "matches");
-        window.addDoc = addDoc;
-        window.getDocs = getDocs;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
-        window.collection = collection;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.where = where;
-    </script>
-
     <script>
         // ═══════════════════════════════════════
         // GLOBAL STATE
@@ -544,6 +5,9 @@
         let currentMatchId = null, currentMatchData = null, allActions = [];
         let rallyCounter = 1, setNumber = 1, currentRallyId = null, actionInRally = 0;
         let playerNames = { A: 'A', B: 'B' };
+        let isViewingHistorical = false;
+        let historicalActions = [];
+        let historicalNames = { A: 'A', B: 'B' };
 
         // ═══════════════════ DISPLAY MAPS ═══════════════════
         const outcomeDisplay = {
@@ -576,40 +40,83 @@
             checkForActiveMatch();
             updateAllLabels();
             onOutcomeChange();
+            // Ensure correct initial tab state
+            document.getElementById('loggingCard').style.display = 'none';
+            document.getElementById('recentLogCard').style.display = 'none';
+            document.getElementById('continuationBanner').style.display = 'none';
         });
 
         function checkForActiveMatch() {
             const saved = localStorage.getItem('currentMatch');
             if (!saved) return;
-            const data = JSON.parse(saved);
-            currentMatchId = data.id; currentMatchData = data;
-            rallyCounter = data.rallyCounter || 1; setNumber = data.setNumber || 1;
-            currentRallyId = data.currentRallyId || null; actionInRally = data.actionInRally || 0;
-            playerNames = data.playerNames || { A: 'A', B: 'B' };
-            updateAllLabels(); selectSetUI(setNumber);
-            document.getElementById('currentMatchDisplay').textContent = `${playerNames.A}/${playerNames.B} vs ${data.opponentName || 'Opp'}`;
+            try {
+                const data = JSON.parse(saved);
+                currentMatchId = data.id;
+                currentMatchData = data;
+                rallyCounter = data.rallyCounter || 1;
+                setNumber = data.setNumber || 1;
+                currentRallyId = data.currentRallyId || null;
+                actionInRally = data.actionInRally || 0;
+                playerNames = data.playerNames || { A: 'A', B: 'B' };
+                updateAllLabels();
+                selectSetUI(setNumber);
+                document.getElementById('currentMatchDisplay').textContent = `${playerNames.A}/${playerNames.B} vs ${data.opponentName || 'Opp'}`;
+                showLoggingInterface();
+                if (currentRallyId) {
+                    showContinuationBanner();
+                }
+                loadActionsForCurrentMatch();
+            } catch (e) {
+                console.error('Error loading saved match:', e);
+                localStorage.removeItem('currentMatch');
+            }
+        }
+
+        function showLoggingInterface() {
             document.getElementById('setupCard').style.display = 'none';
             document.getElementById('loggingCard').style.display = 'block';
             document.getElementById('recentLogCard').style.display = 'block';
-            if (currentRallyId) {
-                document.getElementById('continuationBanner').style.display = 'flex';
-                document.getElementById('bannerText').textContent = `Rally #${rallyCounter} continues`;
-                document.getElementById('bannerDetail').textContent = `Action ${actionInRally + 1}`;
-                document.getElementById('logCardTitle').textContent = `Rally #${rallyCounter} (cont.)`;
-                document.getElementById('logButton').textContent = 'Log Next Action';
-            }
-            loadActionsForCurrentMatch();
+        }
+
+        function hideLoggingInterface() {
+            document.getElementById('setupCard').style.display = 'block';
+            document.getElementById('loggingCard').style.display = 'none';
+            document.getElementById('recentLogCard').style.display = 'none';
+            document.getElementById('continuationBanner').style.display = 'none';
+            document.getElementById('logCardTitle').textContent = 'Log Rally';
+            document.getElementById('logButton').textContent = 'Log Action';
+        }
+
+        function showContinuationBanner() {
+            document.getElementById('continuationBanner').style.display = 'flex';
+            document.getElementById('bannerText').textContent = `Rally #${rallyCounter} continues`;
+            document.getElementById('bannerDetail').textContent = `Action ${actionInRally + 1}`;
+            document.getElementById('logCardTitle').textContent = `Rally #${rallyCounter} (cont.)`;
+            document.getElementById('logButton').textContent = 'Log Next Action';
         }
 
         function updateAllLabels() {
-            document.querySelectorAll('#attacker option[value="A"], #server option[value="A"], #pointWonBy option[value="A"], #digBy option[value="A"]').forEach(o => o.textContent = playerNames.A);
-            document.querySelectorAll('#attacker option[value="B"], #server option[value="B"], #pointWonBy option[value="B"], #digBy option[value="B"]').forEach(o => o.textContent = playerNames.B);
+            const selectors = ['#attacker', '#server', '#pointWonBy', '#digBy'];
+            selectors.forEach(sel => {
+                const el = document.querySelector(sel);
+                if (!el) return;
+                const aOpt = el.querySelector('option[value="A"]');
+                const bOpt = el.querySelector('option[value="B"]');
+                if (aOpt) aOpt.textContent = playerNames.A;
+                if (bOpt) bOpt.textContent = playerNames.B;
+            });
         }
 
-        function selectSet(s) { setNumber = s; selectSetUI(s); saveCurrentMatchToLocal(); }
+        function selectSet(s) {
+            setNumber = s;
+            selectSetUI(s);
+            saveCurrentMatchToLocal();
+        }
+
         function selectSetUI(s) {
             document.querySelectorAll('.set-btn').forEach(b => b.classList.remove('active'));
-            const btn = document.getElementById('setBtn' + s); if (btn) btn.classList.add('active');
+            const btn = document.getElementById('setBtn' + s);
+            if (btn) btn.classList.add('active');
         }
 
         // ═══════════════════ MATCH MANAGEMENT ═══════════════════
@@ -618,59 +125,213 @@
             const pB = document.getElementById('playerBName').value.trim() || 'B';
             const opponentName = document.getElementById('opponentName').value.trim() || 'Opp';
             const matchDate = document.getElementById('matchDate').value || new Date().toISOString().split('T')[0];
-            playerNames = { A: pA, B: pB }; updateAllLabels();
-            const matchData = { playerAName: pA, playerBName: pB, opponentName, matchDate, createdAt: new Date().toISOString() };
+
+            playerNames = { A: pA, B: pB };
+            updateAllLabels();
+
+            const matchData = {
+                playerAName: pA,
+                playerBName: pB,
+                opponentName,
+                matchDate,
+                createdAt: new Date().toISOString()
+            };
+
             try {
                 const docRef = await window.addDoc(window.matchesCollection, matchData);
                 currentMatchId = docRef.id;
                 currentMatchData = { id: docRef.id, ...matchData, playerNames };
-                rallyCounter = 1; setNumber = 1; allActions = []; currentRallyId = null; actionInRally = 0;
-                selectSetUI(1); saveCurrentMatchToLocal();
+                rallyCounter = 1;
+                setNumber = 1;
+                allActions = [];
+                currentRallyId = null;
+                actionInRally = 0;
+                isViewingHistorical = false;
+
+                selectSetUI(1);
+                saveCurrentMatchToLocal();
                 document.getElementById('currentMatchDisplay').textContent = `${pA}/${pB} vs ${opponentName}`;
-                document.getElementById('setupCard').style.display = 'none';
-                document.getElementById('loggingCard').style.display = 'block';
-                document.getElementById('recentLogCard').style.display = 'block';
+                showLoggingInterface();
                 document.getElementById('continuationBanner').style.display = 'none';
                 document.getElementById('logCardTitle').textContent = 'Log Rally';
                 document.getElementById('logButton').textContent = 'Log Action';
-                renderRecentRallies(); showToast('Match started! 🏐');
-            } catch (e) { showToast('Error: ' + e.message); console.error(e); }
+                document.getElementById('digDetails').style.display = 'none';
+                renderRecentRallies();
+                showToast('Match started! 🏐');
+            } catch (e) {
+                console.error('Start match error:', e);
+                showToast('Error starting match: ' + e.message);
+            }
         }
 
         function saveCurrentMatchToLocal() {
-            localStorage.setItem('currentMatch', JSON.stringify({ ...currentMatchData, rallyCounter, setNumber, playerNames, currentRallyId, actionInRally }));
+            if (!currentMatchId) return;
+            localStorage.setItem('currentMatch', JSON.stringify({
+                ...currentMatchData,
+                rallyCounter,
+                setNumber,
+                playerNames,
+                currentRallyId,
+                actionInRally
+            }));
         }
 
         async function endMatch() {
-            if (currentRallyId && actionInRally > 0 && !confirm('A rally is in progress. End it and save the match?')) return;
+            if (currentRallyId && actionInRally > 0) {
+                if (!confirm('A rally is in progress. End it and save the match?')) return;
+            }
             if (!confirm('End this match and save all data?')) return;
-            currentMatchId = null; currentMatchData = null; allActions = [];
-            rallyCounter = 1; setNumber = 1; currentRallyId = null; actionInRally = 0;
-            playerNames = { A: 'A', B: 'B' }; localStorage.removeItem('currentMatch');
+
+            currentMatchId = null;
+            currentMatchData = null;
+            allActions = [];
+            rallyCounter = 1;
+            setNumber = 1;
+            currentRallyId = null;
+            actionInRally = 0;
+            isViewingHistorical = false;
+            playerNames = { A: 'A', B: 'B' };
+            localStorage.removeItem('currentMatch');
             document.getElementById('currentMatchDisplay').textContent = 'No match set';
-            document.getElementById('setupCard').style.display = 'block';
-            document.getElementById('loggingCard').style.display = 'none';
-            document.getElementById('recentLogCard').style.display = 'none';
-            document.getElementById('continuationBanner').style.display = 'none';
-            document.getElementById('logCardTitle').textContent = 'Log Rally';
-            document.getElementById('logButton').textContent = 'Log Action';
-            selectSetUI(1); updateAllLabels(); showToast('Match saved! ✅'); loadMatches();
+            hideLoggingInterface();
+            selectSetUI(1);
+            updateAllLabels();
+            showToast('Match saved! ✅');
+            loadMatches();
+        }
+
+        // ═══════════════════ RESUME MATCH ═══════════════════
+        async function resumeMatch(matchId) {
+            try {
+                // Get match data directly by querying all matches and finding the right one
+                const allMatchesSnap = await window.getDocs(window.collection(window.db, 'matches'));
+                let md = null;
+                allMatchesSnap.forEach(d => {
+                    if (d.id === matchId) md = { id: d.id, ...d.data() };
+                });
+
+                if (!md) {
+                    showToast('Match not found in database');
+                    return;
+                }
+
+                // End current match if active
+                if (currentMatchId) {
+                    localStorage.removeItem('currentMatch');
+                }
+
+                playerNames = { A: md.playerAName || 'A', B: md.playerBName || 'B' };
+                currentMatchId = matchId;
+                currentMatchData = { ...md, playerNames };
+                currentRallyId = null;
+                actionInRally = 0;
+                isViewingHistorical = false;
+                updateAllLabels();
+                selectSetUI(setNumber);
+
+                document.getElementById('currentMatchDisplay').textContent = `${playerNames.A}/${playerNames.B} vs ${md.opponentName || 'Opp'}`;
+                showLoggingInterface();
+                document.getElementById('continuationBanner').style.display = 'none';
+                document.getElementById('logCardTitle').textContent = 'Log Rally';
+                document.getElementById('logButton').textContent = 'Log Action';
+                document.getElementById('digDetails').style.display = 'none';
+
+                await loadActionsForCurrentMatch();
+                saveCurrentMatchToLocal();
+                showToast('Resumed match! 🏐');
+                switchTab('log');
+            } catch (e) {
+                console.error('Resume match error:', e);
+                showToast('Error resuming match: ' + e.message);
+            }
+        }
+
+        async function loadActionsForCurrentMatch() {
+            if (!currentMatchId) return;
+            try {
+                const q = window.query(
+                    window.actionsCollection,
+                    window.where('matchId', '==', currentMatchId),
+                    window.orderBy('timestamp', 'asc')
+                );
+                const qs = await window.getDocs(q);
+                allActions = [];
+                qs.forEach(d => allActions.push({ id: d.id, ...d.data() }));
+                if (allActions.length > 0) {
+                    const rallyNumbers = allActions.map(a => a.rallyNumber || 0);
+                    rallyCounter = Math.max(...rallyNumbers) + 1;
+                } else {
+                    rallyCounter = 1;
+                }
+                saveCurrentMatchToLocal();
+                renderRecentRallies();
+            } catch (e) {
+                console.error('Load actions error:', e);
+            }
+        }
+
+        // ═══════════════════ VIEW HISTORICAL MATCH STATS ═══════════════════
+        async function viewMatchStats(matchId, pA, pB) {
+            try {
+                const q = window.query(
+                    window.actionsCollection,
+                    window.where('matchId', '==', matchId),
+                    window.orderBy('timestamp', 'asc')
+                );
+                const qs = await window.getDocs(q);
+                const actions = [];
+                qs.forEach(d => actions.push({ id: d.id, ...d.data() }));
+
+                isViewingHistorical = true;
+                historicalActions = allActions;
+                historicalNames = { ...playerNames };
+                allActions = actions;
+                playerNames = { A: pA || 'A', B: pB || 'B' };
+
+                switchTab('stats');
+                refreshStats();
+                showToast(`Viewing historical stats — ${actions.length} actions`);
+
+                // Auto-revert after 30 seconds
+                setTimeout(() => {
+                    if (isViewingHistorical) {
+                        allActions = historicalActions;
+                        playerNames = historicalNames;
+                        isViewingHistorical = false;
+                        showToast('Returned to current match stats');
+                    }
+                }, 30000);
+            } catch (e) {
+                console.error('View match stats error:', e);
+                showToast('Error loading match stats');
+            }
         }
 
         // ═══════════════════ ACTION LOGGING ═══════════════════
         function onOutcomeChange() {
             const o = document.getElementById('outcome').value;
-            document.getElementById('digDetails').style.display = (o === 'DUG' || o === 'D-ERR' || o === 'BLK-C') ? 'block' : 'none';
+            document.getElementById('digDetails').style.display =
+                (o === 'DUG' || o === 'D-ERR' || o === 'BLK-C') ? 'block' : 'none';
         }
 
-        function isRallyEnding(o) { return ['KNT','KT','BLK','OUT','NET','D-ERR'].includes(o); }
+        function isRallyEnding(o) {
+            return ['KNT', 'KT', 'BLK', 'OUT', 'NET', 'D-ERR'].includes(o);
+        }
 
         async function logAction() {
-            if (!currentMatchId) { showToast('Start a match first!'); return; }
+            if (!currentMatchId) {
+                showToast('Start a match first!');
+                return;
+            }
+
             const outcome = document.getElementById('outcome').value;
+
             const action = {
-                matchId: currentMatchId, rallyId: currentRallyId, actionNumber: actionInRally + 1,
-                setNumber, rallyNumber: rallyCounter,
+                matchId: currentMatchId,
+                rallyId: currentRallyId,
+                actionNumber: actionInRally + 1,
+                setNumber,
+                rallyNumber: rallyCounter,
                 server: document.getElementById('server').value,
                 serveType: document.getElementById('serveType').value,
                 serveStrength: document.getElementById('serveStrength').value,
@@ -686,102 +347,172 @@
                 shotType: document.getElementById('shotType').value,
                 direction: document.getElementById('direction').value,
                 outcome,
-                digBy: (outcome === 'DUG' || outcome === 'D-ERR' || outcome === 'BLK-C') ? document.getElementById('digBy').value : null,
-                digQuality: (outcome === 'DUG' || outcome === 'D-ERR' || outcome === 'BLK-C') ? document.getElementById('digQuality').value : null,
+                digBy: (outcome === 'DUG' || outcome === 'D-ERR' || outcome === 'BLK-C') ?
+                    document.getElementById('digBy').value : null,
+                digQuality: (outcome === 'DUG' || outcome === 'D-ERR' || outcome === 'BLK-C') ?
+                    document.getElementById('digQuality').value : null,
                 pointWonBy: document.getElementById('pointWonBy').value,
                 note: document.getElementById('note').value || '',
                 isRallyEnd: isRallyEnding(outcome),
                 timestamp: new Date().toISOString()
             };
+
             try {
                 const docRef = await window.addDoc(window.actionsCollection, action);
                 action.id = docRef.id;
-                if (!currentRallyId) { currentRallyId = docRef.id; action.rallyId = currentRallyId; }
+                if (!currentRallyId) {
+                    currentRallyId = docRef.id;
+                    action.rallyId = currentRallyId;
+                }
             } catch (e) {
+                console.error('Save action error:', e);
                 action.id = 'local-' + Date.now();
-                if (!currentRallyId) { currentRallyId = action.id; action.rallyId = currentRallyId; }
+                if (!currentRallyId) {
+                    currentRallyId = action.id;
+                    action.rallyId = currentRallyId;
+                }
             }
-            allActions.push(action); actionInRally++;
+
+            allActions.push(action);
+            actionInRally++;
+
             if (isRallyEnding(outcome)) {
-                currentRallyId = null; actionInRally = 0; rallyCounter++;
+                // Rally over
+                currentRallyId = null;
+                actionInRally = 0;
+                rallyCounter++;
                 document.getElementById('continuationBanner').style.display = 'none';
                 document.getElementById('logCardTitle').textContent = 'Log Rally';
                 document.getElementById('logButton').textContent = 'Log Action';
-                document.getElementById('server').value = action.pointWonBy === 'Opp' ? 'Opp' : (action.pointWonBy === 'A' ? 'A' : 'B');
-                document.getElementById('recQuality').value = ''; document.getElementById('digDetails').style.display = 'none';
+                // Auto-set server for next rally (point winner serves)
+                const nextServer = action.pointWonBy === 'Opp' ? 'Opp' :
+                    (action.pointWonBy === 'A' ? 'A' : 'B');
+                document.getElementById('server').value = nextServer;
+                document.getElementById('recQuality').value = '';
+                document.getElementById('digDetails').style.display = 'none';
+                document.getElementById('note').value = '';
             } else {
-                document.getElementById('continuationBanner').style.display = 'flex';
-                document.getElementById('bannerText').textContent = `Rally #${rallyCounter} continues`;
-                document.getElementById('bannerDetail').textContent = `Action ${actionInRally + 1} — last: ${outcomeDisplay[outcome] || outcome}`;
-                document.getElementById('logCardTitle').textContent = `Rally #${rallyCounter} (cont.)`;
-                document.getElementById('logButton').textContent = 'Log Next Action';
+                // Rally continues
+                showContinuationBanner();
                 document.getElementById('server').value = action.pointWonBy;
                 document.getElementById('recQuality').value = '';
             }
-            saveCurrentMatchToLocal(); renderRecentRallies();
+
+            saveCurrentMatchToLocal();
+            renderRecentRallies();
             showToast(outcome === 'DUG' ? 'Dug! Rally continues 🔄' : 'Action logged ✅');
         }
 
         function finishRallyEarly() {
-            if (!confirm('End this rally now?')) return;
-            currentRallyId = null; actionInRally = 0; rallyCounter++;
+            if (!confirm('End this rally now? The point winner will be whoever is selected in "Point Won By".')) return;
+            currentRallyId = null;
+            actionInRally = 0;
+            rallyCounter++;
             document.getElementById('continuationBanner').style.display = 'none';
             document.getElementById('logCardTitle').textContent = 'Log Rally';
             document.getElementById('logButton').textContent = 'Log Action';
-            document.getElementById('server').value = document.getElementById('pointWonBy').value === 'Opp' ? 'Opp' : (document.getElementById('pointWonBy').value === 'A' ? 'A' : 'B');
-            document.getElementById('recQuality').value = ''; document.getElementById('digDetails').style.display = 'none';
-            saveCurrentMatchToLocal(); showToast('Rally ended early ✕');
+            const pwb = document.getElementById('pointWonBy').value;
+            document.getElementById('server').value = pwb === 'Opp' ? 'Opp' : (pwb === 'A' ? 'A' : 'B');
+            document.getElementById('recQuality').value = '';
+            document.getElementById('digDetails').style.display = 'none';
+            document.getElementById('note').value = '';
+            saveCurrentMatchToLocal();
+            showToast('Rally ended early ✕');
         }
 
         function newRally() {
-            if (currentRallyId && actionInRally > 0 && !confirm('A rally is in progress. Start a new one?')) return;
-            currentRallyId = null; actionInRally = 0;
+            if (currentRallyId && actionInRally > 0) {
+                if (!confirm('A rally is in progress. Start a new one anyway?')) return;
+            }
+            currentRallyId = null;
+            actionInRally = 0;
             document.getElementById('continuationBanner').style.display = 'none';
             document.getElementById('logCardTitle').textContent = 'Log Rally';
             document.getElementById('logButton').textContent = 'Log Action';
             document.getElementById('digDetails').style.display = 'none';
-            document.getElementById('note').value = ''; saveCurrentMatchToLocal(); showToast('Starting new rally ➕');
+            document.getElementById('note').value = '';
+            saveCurrentMatchToLocal();
+            showToast('Starting new rally ➕');
         }
 
         async function undoLast() {
             if (allActions.length === 0) return;
-            const last = allActions.pop(); actionInRally--;
+            const last = allActions.pop();
+            actionInRally--;
+
             if (actionInRally <= 0) {
-                currentRallyId = null; actionInRally = 0; rallyCounter = Math.max(1, rallyCounter - 1);
+                currentRallyId = null;
+                actionInRally = 0;
+                rallyCounter = Math.max(1, rallyCounter - 1);
                 document.getElementById('continuationBanner').style.display = 'none';
                 document.getElementById('logCardTitle').textContent = 'Log Rally';
                 document.getElementById('logButton').textContent = 'Log Action';
                 document.getElementById('digDetails').style.display = 'none';
             }
+
             if (last.id && !last.id.startsWith('local-')) {
-                try { await window.deleteDoc(window.doc(window.db, 'actions', last.id)); } catch (e) {}
+                try {
+                    await window.deleteDoc(window.doc(window.db, 'actions', last.id));
+                } catch (e) {
+                    console.error('Delete error:', e);
+                }
             }
-            saveCurrentMatchToLocal(); renderRecentRallies(); showToast('Last action undone ↩');
+
+            saveCurrentMatchToLocal();
+            renderRecentRallies();
+            showToast('Last action undone ↩');
         }
 
         // ═══════════════════ RENDER RECENT RALLIES ═══════════════════
         function renderRecentRallies() {
             const container = document.getElementById('recentRallies');
-            document.getElementById('rallyCount').textContent = `(${allActions.length} actions, ${rallyCounter - 1} rallies)`;
-            if (allActions.length === 0) { container.innerHTML = '<div class="empty-state">No rallies logged yet</div>'; return; }
+            const countEl = document.getElementById('rallyCount');
+            const completedRallies = allActions.filter(a => a.isRallyEnd).length;
+            countEl.textContent = `(${allActions.length} actions, ${completedRallies} completed rallies)`;
+
+            if (allActions.length === 0) {
+                container.innerHTML = '<div class="empty-state">No rallies logged yet</div>';
+                return;
+            }
+
+            // Group actions by rallyId
             const grouped = {};
-            allActions.forEach(a => { const k = a.rallyId || a.id; if (!grouped[k]) grouped[k] = []; grouped[k].push(a); });
+            allActions.forEach(a => {
+                const key = a.rallyId || a.id;
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(a);
+            });
+
             const groups = Object.values(grouped).slice(-10).reverse();
+
             container.innerHTML = groups.map(actions => {
-                const first = actions[0], lastAction = actions[actions.length - 1];
-                const pwbName = lastAction.pointWonBy === 'A' ? playerNames.A : (lastAction.pointWonBy === 'B' ? playerNames.B : 'Opp');
+                const first = actions[0];
+                const lastAction = actions[actions.length - 1];
+                const pwbName = lastAction.pointWonBy === 'A' ? playerNames.A :
+                    (lastAction.pointWonBy === 'B' ? playerNames.B : 'Opp');
+
                 return `<div class="rally-group">
-                    <div class="rally-group-header"><span>Set ${first.setNumber} · Rally #${first.rallyNumber}</span><span style="font-size:0.68rem;color:var(--accent);">→ ${pwbName} point</span></div>
+                    <div class="rally-group-header">
+                        <span>Set ${first.setNumber} · Rally #${first.rallyNumber}</span>
+                        <span style="font-size:0.68rem;color:var(--accent);">→ ${pwbName} point</span>
+                    </div>
                     ${actions.map((a, i) => {
                         const oc = getOutcomeClass(a.outcome);
                         const attName = attackerName(a.attacker);
-                        let setInfo = `<span class="set-detail">Set: ${setQualityDisplay[a.setQuality] || a.setQuality} ${setHeightDisplay[a.setHeight] || a.setHeight} ${setDepthDisplay[a.setDepth] || a.setDepth} · ${setLateralDisplay[a.setLateral] || a.setLateral}</span>`;
+                        const setInfo = `<span class="set-detail">Set: ${setQualityDisplay[a.setQuality] || a.setQuality} ${setHeightDisplay[a.setHeight] || a.setHeight} ${setDepthDisplay[a.setDepth] || a.setDepth} · ${setLateralDisplay[a.setLateral] || a.setLateral}</span>`;
                         let digInfo = '';
-                        if (a.digBy) { const dn = a.digBy === 'A' ? playerNames.A : (a.digBy === 'B' ? playerNames.B : 'Opp'); digInfo = `<span class="action-meta">Dig: ${dn} (${qualityDisplay[a.digQuality] || a.digQuality})</span>`; }
+                        if (a.digBy) {
+                            const dn = a.digBy === 'A' ? playerNames.A : (a.digBy === 'B' ? playerNames.B : 'Opp');
+                            digInfo = `<span class="action-meta">Dig: ${dn} (${qualityDisplay[a.digQuality] || a.digQuality})</span>`;
+                        }
                         return `<div class="action-row">
                             <span class="action-number">${a.actionNumber}</span>
                             <span class="rally-badge ${oc}">${outcomeDisplay[a.outcome] || a.outcome}</span>
-                            <span class="action-info"><strong>${attName}</strong> ${zoneDisplay[a.fromZone] || a.fromZone} · ${shotDisplay[a.shotType] || a.shotType} · ${dirDisplay[a.direction] || a.direction} ${setInfo} ${digInfo} ${a.note ? `<br><span class="action-meta">📝 ${a.note}</span>` : ''}</span>
+                            <span class="action-info">
+                                <strong>${attName}</strong> ${zoneDisplay[a.fromZone] || a.fromZone} · ${shotDisplay[a.shotType] || a.shotType} · ${dirDisplay[a.direction] || a.direction}
+                                ${setInfo} ${digInfo}
+                                ${a.note ? `<br><span class="action-meta">📝 ${a.note}</span>` : ''}
+                            </span>
                         </div>`;
                     }).join('')}
                 </div>`;
@@ -804,11 +535,17 @@
             const fset = document.getElementById('filterSet')?.value || 'All';
 
             let attacks = [...allActions].filter(a => a.attacker);
-            let serves = [...allActions].filter(a => a.server && a.serveType); // first action of each rally is the serve
-            if (fp !== 'All') { attacks = attacks.filter(a => a.attacker === fp); serves = serves.filter(a => a.server === fp); }
+            let serves = [...allActions];
+            if (fp !== 'All') {
+                attacks = attacks.filter(a => a.attacker === fp);
+                serves = serves.filter(a => a.server === fp);
+            }
             if (fs !== 'All') attacks = attacks.filter(a => a.shotType === fs);
             if (fd !== 'All') attacks = attacks.filter(a => a.direction === fd);
-            if (fset !== 'All') { attacks = attacks.filter(a => a.setNumber == fset); serves = serves.filter(a => a.setNumber == fset); }
+            if (fset !== 'All') {
+                attacks = attacks.filter(a => a.setNumber == fset);
+                serves = serves.filter(a => a.setNumber == fset);
+            }
 
             const total = attacks.length;
             const kills = attacks.filter(a => a.outcome === 'KNT' || a.outcome === 'KT').length;
@@ -816,11 +553,20 @@
             const blocks = attacks.filter(a => a.outcome === 'BLK').length;
             const dug = attacks.filter(a => a.outcome === 'DUG').length;
             const eff = total > 0 ? (((kills - errors - blocks) / total) * 100).toFixed(1) : '0.0';
-            const kp = total > 0 ? ((kills/total)*100).toFixed(1) : '0';
-            const ep = total > 0 ? ((errors/total)*100).toFixed(1) : '0';
-            const bp = total > 0 ? ((blocks/total)*100).toFixed(1) : '0';
+            const kp = total > 0 ? ((kills / total) * 100).toFixed(1) : '0';
+            const ep = total > 0 ? ((errors / total) * 100).toFixed(1) : '0';
+            const bp = total > 0 ? ((blocks / total) * 100).toFixed(1) : '0';
 
             let html = '';
+
+            // Historical banner
+            if (isViewingHistorical) {
+                html += `<div class="continuation-banner" style="margin-bottom:10px;">
+                    <div><div class="banner-text">📊 Viewing Historical Match Stats</div>
+                    <div class="banner-detail">These stats are from a saved match. They will revert in 30 seconds.</div></div>
+                    <button class="btn btn-outline btn-xs" onclick="exitHistoricalView()">Return to Current</button>
+                </div>`;
+            }
 
             // Attack Overview
             html += `<div class="stats-section"><div class="stats-section-title">Attack Overview</div>
@@ -828,7 +574,7 @@
                     <div class="stat-card good"><div class="stat-value">${kills} (${kp}%)</div><div class="stat-label">Kills</div></div>
                     <div class="stat-card bad"><div class="stat-value">${errors} (${ep}%)</div><div class="stat-label">Errors</div></div>
                     <div class="stat-card warn"><div class="stat-value">${blocks} (${bp}%)</div><div class="stat-label">Blocked</div></div>
-                    <div class="stat-card ${parseFloat(eff) > 0 ? 'good' : 'bad'}"><div class="stat-value">${eff}%</div><div class="stat-label">Efficiency</div></div>
+                    <div class="stat-card ${parseFloat(eff) >= 0 ? 'good' : 'bad'}"><div class="stat-value">${eff}%</div><div class="stat-label">Efficiency</div></div>
                 </div>
                 <div class="stats-grid" style="margin-top:4px;">
                     <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">Total Attacks</div></div>
@@ -836,33 +582,39 @@
                     <div class="stat-card"><div class="stat-value">${kp}%</div><div class="stat-label">Kill %</div></div>
                 </div></div>`;
 
-            // Outcome by Set Quality
-            html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Set Quality</div>`;
-            html += buildOutcomeTable(attacks, 'setQuality', setQualityDisplay, ['1','2','3']);
-            html += `</div>`;
+            if (total === 0) {
+                html += '<div class="empty-state"><div class="icon">📊</div>No attack data for this filter. Log some actions first.</div>';
+            } else {
+                // Outcome by Set Quality
+                html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Set Quality</div>`;
+                html += buildOutcomeTable(attacks, 'setQuality', setQualityDisplay, ['1', '2', '3']);
+                html += `</div>`;
 
-            // Outcome by Set Height & Depth
-            html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Set Height & Depth</div>
-                <div class="form-row">`;
-            html += `<div>${buildOutcomeTable(attacks, 'setHeight', setHeightDisplay, ['H','L'])}</div>`;
-            html += `<div>${buildOutcomeTable(attacks, 'setDepth', setDepthDisplay, ['T','S','O'])}</div>`;
-            html += `</div></div>`;
+                // Outcome by Set Height & Depth
+                html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Set Height & Depth</div>
+                    <div class="form-row">`;
+                html += `<div>${buildOutcomeTable(attacks, 'setHeight', setHeightDisplay, ['H', 'L'])}</div>`;
+                html += `<div>${buildOutcomeTable(attacks, 'setDepth', setDepthDisplay, ['T', 'S', 'O'])}</div>`;
+                html += `</div></div>`;
 
-            // Outcome by Direction
-            html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Direction</div>`;
-            html += buildOutcomeTable(attacks, 'direction', dirDisplay, ['L','LC','S','C','CS','JB']);
-            html += `</div>`;
+                // Outcome by Direction
+                html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Direction</div>`;
+                html += buildOutcomeTable(attacks, 'direction', dirDisplay, ['L', 'LC', 'S', 'C', 'CS', 'JB']);
+                html += `</div>`;
 
-            // Outcome by Attack Zone
-            html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Zone</div>`;
-            html += buildOutcomeTable(attacks, 'fromZone', zoneDisplay, ['1L','1C','1R','2L','2C','2R','3L','3C','3R']);
-            html += `</div>`;
+                // Outcome by Attack Zone
+                html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Zone</div>`;
+                html += buildOutcomeTable(attacks, 'fromZone', zoneDisplay, ['1L', '1C', '1R', '2L', '2C', '2R', '3L', '3C', '3R']);
+                html += `</div>`;
 
-            // Attack by Receive Quality
-            const attacksWithRec = attacks.filter(a => a.recQuality !== null && a.recQuality !== '');
-            html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Receive Quality</div>`;
-            html += buildOutcomeTable(attacksWithRec, 'recQuality', qualityDisplay, ['0','1','2','3']);
-            html += `</div>`;
+                // Attack by Receive Quality
+                const attacksWithRec = attacks.filter(a => a.recQuality !== null && a.recQuality !== '');
+                if (attacksWithRec.length > 0) {
+                    html += `<div class="stats-section"><div class="stats-section-title">Attack Outcome by Receive Quality</div>`;
+                    html += buildOutcomeTable(attacksWithRec, 'recQuality', qualityDisplay, ['0', '1', '2', '3']);
+                    html += `</div>`;
+                }
+            }
 
             // Serve Performance
             html += `<div class="stats-section"><div class="stats-section-title">Serve Performance</div>`;
@@ -870,14 +622,14 @@
             html += `</div>`;
 
             // Dig Performance
-            const digs = allActions.filter(a => a.digBy);
+            let digs = allActions.filter(a => a.digBy);
             if (fset !== 'All') digs = digs.filter(a => a.setNumber == fset);
             html += `<div class="stats-section"><div class="stats-section-title">Dig Performance</div>`;
             if (digs.length === 0) {
                 html += '<div class="empty-state">No digs recorded</div>';
             } else {
                 html += `<table class="mini-table"><tr><th>Dig By</th><th>Poor (1)</th><th>Medium (2)</th><th>Perfect (3)</th><th>Total</th></tr>`;
-                ['A','B','Opp'].forEach(p => {
+                ['A', 'B', 'Opp'].forEach(p => {
                     const pd = digs.filter(d => d.digBy === p);
                     if (pd.length === 0) return;
                     const name = p === 'A' ? playerNames.A : (p === 'B' ? playerNames.B : 'Opponent');
@@ -896,8 +648,8 @@
 
         function buildOutcomeTable(actions, field, displayMap, keys) {
             if (actions.length === 0) return '<div class="empty-state">No data for this filter</div>';
-            const outcomes = ['KNT','KT','BLK','OUT','NET','DUG'];
-            let html = `<table class="mini-table"><tr><th>${field.replace(/([A-Z])/g,' $1').trim()}</th>`;
+            const outcomes = ['KNT', 'KT', 'BLK', 'OUT', 'NET', 'DUG'];
+            let html = `<table class="mini-table"><tr><th>${field.replace(/([A-Z])/g, ' $1').trim()}</th>`;
             outcomes.forEach(o => html += `<th>${outcomeDisplay[o]}</th>`);
             html += '<th>Total</th><th>Kill%</th></tr>';
             keys.forEach(key => {
@@ -909,11 +661,11 @@
                 html += `<tr><td><strong>${label}</strong></td>`;
                 outcomes.forEach(o => {
                     const c = subset.filter(a => a.outcome === o).length;
-                    const p = subset.length > 0 ? ((c/subset.length)*100).toFixed(0) : 0;
+                    const p = subset.length > 0 ? ((c / subset.length) * 100).toFixed(0) : 0;
                     const cls = (o === 'OUT' || o === 'NET' || o === 'BLK') && c > 0 && p > 30 ? 'highlight' : '';
-                    html += `<td class="${cls}">${c}${c>0?' ('+p+'%)':''}</td>`;
+                    html += `<td class="${cls}">${c}${c > 0 ? ' (' + p + '%)' : ''}</td>`;
                 });
-                html += `<td><strong>${subset.length}</strong></td><td style="color:${kp>=40?'var(--success)':'var(--danger)'}"><strong>${kp}%</strong></td></tr>`;
+                html += `<td><strong>${subset.length}</strong></td><td style="color:${kp >= 40 ? 'var(--success)' : 'var(--danger)'}"><strong>${kp}%</strong></td></tr>`;
             });
             html += '</table>';
             return html;
@@ -921,108 +673,81 @@
 
         function buildServeTable(serves, fp) {
             if (serves.length === 0) return '<div class="empty-state">No serve data</div>';
-            // Get unique servers from the actions
-            const servers = fp === 'All' ? ['A','B','Opp'] : [fp];
-            let html = `<table class="mini-table"><tr><th>Server</th><th>Total Serves</th><th>Aces</th><th>Errors</th><th>Avg Strength</th><th>Top Zone</th><th>Best Zone</th><th>Worst Zone</th></tr>`;
+            const servers = fp === 'All' ? ['A', 'B', 'Opp'] : [fp];
+            let html = `<table class="mini-table"><tr><th>Server</th><th>Total</th><th>Aces</th><th>Errors</th><th>Avg Str</th><th>Most Used Zone</th></tr>`;
             servers.forEach(s => {
                 const ss = serves.filter(a => a.server === s);
                 if (ss.length === 0) return;
                 const name = s === 'A' ? playerNames.A : (s === 'B' ? playerNames.B : 'Opponent');
                 const aces = ss.filter(a => a.recQuality === '0' && a.pointWonBy === s).length;
-                const errs = ss.filter(a => a.outcome === 'OUT' || a.outcome === 'NET' || a.recQuality === '0' && a.pointWonBy !== s).length;
+                const errs = ss.filter(a => a.outcome === 'OUT' || a.outcome === 'NET' || (a.recQuality === '0' && a.pointWonBy !== s)).length;
                 const avgStr = (ss.reduce((sum, a) => sum + parseInt(a.serveStrength || 2), 0) / ss.length).toFixed(1);
-                // Zone frequency
                 const zoneMap = {};
-                ss.forEach(a => { const z = a.serveZone; zoneMap[z] = (zoneMap[z] || 0) + 1; });
-                const topZone = Object.entries(zoneMap).sort((a,b) => b[1]-a[1])[0];
+                ss.forEach(a => { const z = a.serveZone; if (z) zoneMap[z] = (zoneMap[z] || 0) + 1; });
+                const topZone = Object.entries(zoneMap).sort((a, b) => b[1] - a[1])[0];
                 const topZoneStr = topZone ? `${zoneDisplay[topZone[0]] || topZone[0]} (${topZone[1]})` : '-';
-                // Best zone (most aces)
-                const aceZone = {};
-                ss.filter(a => a.recQuality === '0').forEach(a => { const z = a.serveZone; aceZone[z] = (aceZone[z] || 0) + 1; });
-                const bestZone = Object.entries(aceZone).sort((a,b) => b[1]-a[1])[0];
-                const bestZoneStr = bestZone ? `${zoneDisplay[bestZone[0]] || bestZone[0]} (${bestZone[1]} aces)` : '-';
-                // Worst zone (most errors or aces against)
-                const errZone = {};
-                ss.filter(a => a.outcome === 'OUT' || a.outcome === 'NET').forEach(a => { const z = a.serveZone; errZone[z] = (errZone[z] || 0) + 1; });
-                const worstZone = Object.entries(errZone).sort((a,b) => b[1]-a[1])[0];
-                const worstZoneStr = worstZone ? `${zoneDisplay[worstZone[0]] || worstZone[0]} (${worstZone[1]} errors)` : '-';
-                html += `<tr><td><strong>${name}</strong></td><td>${ss.length}</td><td style="color:var(--success);">${aces}</td><td style="color:var(--danger);">${errs}</td><td>${avgStr} (${strengthDisplay[Math.round(avgStr)] || '-'})</td><td>${topZoneStr}</td><td>${bestZoneStr}</td><td>${worstZoneStr}</td></tr>`;
+                html += `<tr><td><strong>${name}</strong></td><td>${ss.length}</td>
+                    <td style="color:var(--success);">${aces}</td>
+                    <td style="color:var(--danger);">${errs}</td>
+                    <td>${avgStr}</td><td>${topZoneStr}</td></tr>`;
             });
             html += '</table>';
             return html;
+        }
+
+        function exitHistoricalView() {
+            allActions = historicalActions;
+            playerNames = historicalNames;
+            isViewingHistorical = false;
+            refreshStats();
+            showToast('Returned to current match');
         }
 
         // ═══════════════════ HISTORY & MATCHES ═══════════════════
         async function loadMatches() {
             try {
                 const qs = await window.getDocs(window.query(window.matchesCollection, window.orderBy('createdAt', 'desc')));
-                const matches = []; qs.forEach(d => matches.push({ id: d.id, ...d.data() }));
-                renderMatchList(matches); renderExistingMatches(matches);
+                const matches = [];
+                qs.forEach(d => matches.push({ id: d.id, ...d.data() }));
+                renderMatchList(matches);
+                renderExistingMatches(matches);
             } catch (e) {
-                document.getElementById('matchList').innerHTML = '<div class="empty-state">⚠️ Could not load. Check connection.</div>';
+                console.error('Load matches error:', e);
+                document.getElementById('matchList').innerHTML = '<div class="empty-state">⚠️ Could not load matches. Check your Firebase config and connection.</div>';
             }
         }
 
         function renderMatchList(matches) {
             const c = document.getElementById('matchList');
-            if (matches.length === 0) { c.innerHTML = '<div class="empty-state"><div class="icon">📋</div>No saved matches</div>'; return; }
+            if (matches.length === 0) {
+                c.innerHTML = '<div class="empty-state"><div class="icon">📋</div>No saved matches yet</div>';
+                return;
+            }
             c.innerHTML = matches.map(m => `
                 <div class="card" style="margin:5px 0;padding:9px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;">
-                        <div><strong>${m.playerAName}/${m.playerBName}</strong> vs ${m.opponentName}<br><span style="font-size:0.68rem;color:var(--subtext);">${m.matchDate}</span></div>
-                        <button class="btn btn-outline btn-xs" onclick="viewMatchStats('${m.id}','${m.playerAName}','${m.playerBName}')">Stats</button>
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+                        <div>
+                            <strong>${m.playerAName || 'A'}/${m.playerBName || 'B'}</strong> vs ${m.opponentName || 'Opp'}<br>
+                            <span style="font-size:0.68rem;color:var(--subtext);">${m.matchDate || 'Unknown date'}</span>
+                        </div>
+                        <div style="display:flex;gap:4px;">
+                            <button class="btn btn-outline btn-xs" onclick="resumeMatch('${m.id}')">Resume</button>
+                            <button class="btn btn-outline btn-xs" onclick="viewMatchStats('${m.id}','${m.playerAName || 'A'}','${m.playerBName || 'B'}')">Stats</button>
+                        </div>
                     </div>
                 </div>`).join('');
         }
 
         function renderExistingMatches(matches) {
             const c = document.getElementById('existingMatches');
-            if (matches.length === 0) { c.innerHTML = '<p style="font-size:0.75rem;color:var(--subtext);">No past matches.</p>'; return; }
-            c.innerHTML = '<p style="font-size:0.7rem;color:var(--subtext);margin-bottom:3px;">Click to resume:</p>' +
-                matches.slice(0,10).map(m => `<span class="match-chip" onclick="resumeMatch('${m.id}')">${m.playerAName}/${m.playerBName} vs ${m.opponentName}</span>`).join('');
-        }
-
-        async function resumeMatch(matchId) {
-            try {
-                const all = await window.getDocs(window.collection(window.db, 'matches'));
-                let md = null; all.forEach(d => { if (d.id === matchId) md = { id: d.id, ...d.data() }; });
-                if (!md) { showToast('Match not found'); return; }
-                playerNames = { A: md.playerAName || 'A', B: md.playerBName || 'B' };
-                currentMatchId = matchId; currentMatchData = { ...md, playerNames };
-                currentRallyId = null; actionInRally = 0; updateAllLabels(); selectSetUI(setNumber);
-                document.getElementById('currentMatchDisplay').textContent = `${playerNames.A}/${playerNames.B} vs ${md.opponentName || 'Opp'}`;
-                document.getElementById('setupCard').style.display = 'none';
-                document.getElementById('loggingCard').style.display = 'block';
-                document.getElementById('recentLogCard').style.display = 'block';
-                document.getElementById('continuationBanner').style.display = 'none';
-                document.getElementById('logCardTitle').textContent = 'Log Rally';
-                document.getElementById('logButton').textContent = 'Log Action';
-                await loadActionsForCurrentMatch();
-                saveCurrentMatchToLocal(); showToast('Resumed match! 🏐'); switchTab('log');
-            } catch (e) { showToast('Error: ' + e.message); }
-        }
-
-        async function loadActionsForCurrentMatch() {
-            try {
-                const q = window.query(window.actionsCollection, window.where('matchId', '==', currentMatchId), window.orderBy('timestamp', 'asc'));
-                const qs = await window.getDocs(q);
-                allActions = []; qs.forEach(d => allActions.push({ id: d.id, ...d.data() }));
-                if (allActions.length > 0) { rallyCounter = Math.max(...allActions.map(a => a.rallyNumber || 0)) + 1; }
-                saveCurrentMatchToLocal(); renderRecentRallies();
-            } catch (e) { console.error('Load error:', e); }
-        }
-
-        async function viewMatchStats(matchId, pA, pB) {
-            try {
-                const q = window.query(window.actionsCollection, window.where('matchId', '==', matchId), window.orderBy('timestamp', 'asc'));
-                const qs = await window.getDocs(q);
-                const actions = []; qs.forEach(d => actions.push({ id: d.id, ...d.data() }));
-                const saved = allActions, savedNames = playerNames;
-                playerNames = { A: pA || 'A', B: pB || 'B' }; allActions = actions;
-                switchTab('stats'); refreshStats();
-                showToast(`Viewing stats. ${actions.length} actions.`);
-                setTimeout(() => { allActions = saved; playerNames = savedNames; }, 15000);
-            } catch (e) { showToast('Error loading stats'); }
+            if (matches.length === 0) {
+                c.innerHTML = '<p style="font-size:0.75rem;color:var(--subtext);">No past matches found.</p>';
+                return;
+            }
+            c.innerHTML = '<p style="font-size:0.7rem;color:var(--subtext);margin-bottom:3px;">Click a match to resume it:</p>' +
+                matches.slice(0, 10).map(m =>
+                    `<span class="match-chip" onclick="resumeMatch('${m.id}')">${m.playerAName || 'A'}/${m.playerBName || 'B'} vs ${m.opponentName || 'Opp'}</span>`
+                ).join('');
         }
 
         async function deleteAllData() {
@@ -1033,16 +758,25 @@
                 for (const d of as.docs) await window.deleteDoc(window.doc(window.db, 'actions', d.id));
                 const ms = await window.getDocs(window.matchesCollection);
                 for (const d of ms.docs) await window.deleteDoc(window.doc(window.db, 'matches', d.id));
-                allActions = []; rallyCounter = 1; currentMatchId = null; currentMatchData = null; currentRallyId = null;
-                actionInRally = 0; playerNames = { A: 'A', B: 'B' };
+                allActions = [];
+                rallyCounter = 1;
+                currentMatchId = null;
+                currentMatchData = null;
+                currentRallyId = null;
+                actionInRally = 0;
+                isViewingHistorical = false;
+                playerNames = { A: 'A', B: 'B' };
                 localStorage.removeItem('currentMatch');
                 document.getElementById('currentMatchDisplay').textContent = 'No match set';
-                document.getElementById('setupCard').style.display = 'block';
-                document.getElementById('loggingCard').style.display = 'none';
-                document.getElementById('recentLogCard').style.display = 'none';
-                document.getElementById('continuationBanner').style.display = 'none';
-                updateAllLabels(); selectSetUI(1); loadMatches(); showToast('All data deleted');
-            } catch (e) { showToast('Error: ' + e.message); }
+                hideLoggingInterface();
+                updateAllLabels();
+                selectSetUI(1);
+                loadMatches();
+                showToast('All data deleted');
+            } catch (e) {
+                console.error('Delete all error:', e);
+                showToast('Error: ' + e.message);
+            }
         }
 
         // ═══════════════════ UI HELPERS ═══════════════════
@@ -1050,7 +784,10 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('[id^="tab-"]').forEach(d => d.style.display = 'none');
             const tabMap = { log: 0, stats: 1, history: 2, matches: 3 };
-            document.querySelectorAll('.tab')[tabMap[tabName]].classList.add('active');
+            const tabIndex = tabMap[tabName];
+            if (tabIndex !== undefined) {
+                document.querySelectorAll('.tab')[tabIndex].classList.add('active');
+            }
             document.getElementById('tab-' + tabName).style.display = 'block';
             if (tabName === 'stats') refreshStats();
             if (tabName === 'history' || tabName === 'matches') loadMatches();
@@ -1058,10 +795,24 @@
 
         function showToast(msg) {
             const t = document.getElementById('toast');
-            t.textContent = msg; t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
         }
-    </script>
 
-</body>
-</html>
+        // Debug helper - logs state to console
+        function debugState() {
+            console.log({
+                currentMatchId,
+                rallyCounter,
+                setNumber,
+                currentRallyId,
+                actionInRally,
+                actionsCount: allActions.length,
+                isViewingHistorical,
+                playerNames
+            });
+        }
+        // Expose for console use
+        window.debugState = debugState;
+    </script>
